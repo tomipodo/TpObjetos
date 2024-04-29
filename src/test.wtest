@@ -1,0 +1,208 @@
+import propiedades.*
+import provincia.*
+import casillerosEspeciales.*
+import jugador.*
+import banco.*
+import tablero.*
+import excepciones.*
+import juego.*
+import estrategias.*
+
+describe "Tests estanciero" {
+
+	var buenosAiresUno
+	var buenosAiresDos
+	var premioGanaderoUno
+	var premioGanaderoDos
+	var premioGanaderoTres
+	var empresaUno
+	var empresaDos
+	var empresaTres
+	var cordobaUno
+	var cordobaDos
+	var cordobaTres
+	var mendozaUno
+	var mendozaDos
+	var mendozaTres
+	var chacoUno
+	var chacoDos
+	var buenosAires
+	var cordoba
+	var chaco
+	var mendoza
+	var podo
+	var santi
+	var fede
+	var nico
+
+	method initialize() {
+		buenosAires = new Provincia(campos = #{})
+		cordoba = new Provincia(campos = #{})
+		chaco = new Provincia(campos = #{})
+		mendoza = new Provincia(campos = #{})
+		buenosAiresUno = new Campo(precioCompra = 200, provincia = buenosAires, renta = 20, precioConstruccion = 50)
+		buenosAiresDos = new Campo(precioCompra = 220, provincia = buenosAires, renta = 22, precioConstruccion = 50)
+		premioGanaderoUno = new PremioGanadero()
+		empresaUno = new Empresa(precioCompra = 250)
+		cordobaUno = new Campo(precioCompra = 250, provincia = cordoba, renta = 25, precioConstruccion = 100)
+		cordobaDos = new Campo(precioCompra = 250, provincia = cordoba, renta = 25, precioConstruccion = 100)
+		cordobaTres = new Campo(precioCompra = 300, provincia = cordoba, renta = 30, precioConstruccion = 100)
+		premioGanaderoDos = new PremioGanadero()
+		empresaDos = new Empresa(precioCompra = 250)
+		mendozaUno = new Campo(precioCompra = 350, provincia = mendoza, renta = 35, precioConstruccion = 150)
+		mendozaDos = new Campo(precioCompra = 350, provincia = mendoza, renta = 35, precioConstruccion = 150)
+		mendozaTres = new Campo(precioCompra = 400, provincia = mendoza, renta = 40, precioConstruccion = 150)
+		premioGanaderoTres = new PremioGanadero()
+		empresaTres = new Empresa(precioCompra = 250)
+		chacoUno = new Campo(precioCompra = 450, provincia = chaco, renta = 45, precioConstruccion = 200)
+		chacoDos = new Campo(precioCompra = 500, provincia = chaco, renta = 50, precioConstruccion = 200)
+		podo = new Jugador(dinero = 2000, estrategia = imperialista)
+		santi = new Jugador(dinero = 2000, estrategia = imperialista)
+		fede = new Jugador(dinero = 2000, estrategia = standard)
+		nico = new Jugador(dinero = 2000, estrategia = garca)
+		banco.agregarPropiedades([ buenosAiresUno, buenosAiresDos, empresaUno, cordobaUno, cordobaDos, cordobaTres, empresaDos, mendozaUno, mendozaDos, mendozaTres, empresaTres, chacoUno, chacoDos ])
+		tablero.agregarCasilleros([ salida, buenosAiresUno, buenosAiresDos, premioGanaderoUno, empresaUno, cordobaUno, cordobaDos, cordobaTres, premioGanaderoDos, empresaDos, prision, mendozaUno, mendozaDos, mendozaTres, premioGanaderoTres, empresaTres, chacoUno, chacoDos ])
+		buenosAires.campos(#{ buenosAiresUno, buenosAiresDos })
+		cordoba.campos(#{ cordobaUno, cordobaDos, cordobaTres })
+		chaco.campos(#{ chacoUno, chacoDos })
+		mendoza.campos(#{ mendozaUno, mendozaDos, mendozaTres })
+		juego.agregarJugadores([ podo, santi, fede, nico ])
+	}
+
+	test "Campos de las provincias" {
+		assert.equals(#{ buenosAiresUno, buenosAiresDos }, buenosAires.campos())
+		assert.equals(#{ cordobaUno, cordobaDos, cordobaTres }, cordoba.campos())
+		assert.equals(#{ mendozaUno, mendozaDos, mendozaTres }, mendoza.campos())
+		assert.equals(#{ chacoUno, chacoDos }, chaco.campos())
+	}
+
+	test "PUNTO 1 A - Obtener coleccion de duenios" {
+		assert.equals(#{ banco }, buenosAires.duenios())
+		assert.equals(#{ banco }, cordoba.duenios())
+		assert.equals(#{ banco }, mendoza.duenios())
+		assert.equals(#{ banco }, chaco.duenios())
+	}
+
+	test "PUNTO 1 B - Agregar estancia a buenosAiresUno" {
+		buenosAiresUno.agregarEstancia()
+		assert.equals(1, buenosAiresUno.cantidadEstancias())
+		assert.equals(0, buenosAiresDos.cantidadEstancias())
+	}
+
+	test "PUNTO 2 A - Mensaje sosEmpresa()" {
+		assert.that(empresaUno.sosEmpresa())
+		assert.notThat(cordobaUno.sosEmpresa())
+	}
+
+	test "PUNTO 2 B - Cantidad de empresas del banco" {
+		assert.equals(3, banco.cantidadDeEmpresas())
+	}
+
+	test "PUNTO 3 - Tirar dados" {
+		assert.that(santi.tirarDados() > 1 && santi.tirarDados() < 13)
+	}
+
+	test "PUNTO 4 - Renta para buenosAiresUno sin estancias " {
+		assert.equals(20, buenosAiresUno.rentaPara(nico))
+	}
+
+	test "PUNTO 4 - Renta para buenosAiresUno con estancias " {
+		buenosAiresUno.agregarEstancia()
+		assert.equals(40, buenosAiresUno.rentaPara(nico))
+	}
+
+	test "PUNTO 4 - Renta para empresas " {
+		const renta = empresaUno.rentaPara(nico)
+		assert.that(renta >= 180000 && renta <= 1080000)
+	}
+
+	test "PUNTO 5 - Hacer que Nico le pague 6000 al banco (tira excepción) " {
+		assert.throwsException({ nico.pagarA(banco, 6000)})
+	}
+
+	test "PUNTO 5 - Hacer que Nico le pague 100 a santi" {
+		nico.pagarA(santi, 100)
+		assert.equals(santi.dinero(), 2100)
+		assert.equals(nico.dinero(), 1900)
+	}
+
+	test "PUNTO 6 - Hacer que Fede pase por la salida" {
+		salida.paso(fede)
+		assert.equals(fede.dinero(), 7000)
+	}
+
+	test "PUNTO 7 - Hacer que Podo caiga en buenosAiresUno con Santi de duenio" {
+		buenosAiresUno.duenio(santi)
+		buenosAiresUno.cayo(podo)
+		assert.equals(podo.dinero(), 1980)
+		assert.equals(santi.dinero(), 2020)
+	}
+
+	test "PUNTO 7 - Hacer que Fede caiga en buenosAiresDos y la compre" {
+		buenosAiresDos.cayo(fede)
+		assert.equals(buenosAiresDos.duenio(), fede)
+		assert.equals(fede.dinero(), 1780)
+	}
+
+	test "PUNTO 7 - Hacer que Nico caiga en premioGanadero" {
+		premioGanaderoUno.cayo(nico)
+		assert.equals(nico.dinero(), 4500)
+	}
+
+	test "PUNTO 8 - Hacer que Nico pase por estos casilleros: [empresaTres, chacoUno, chacoDos, salida, buenosAiresUno]" {
+		nico.moverse([ empresaTres, chacoUno, chacoDos, salida, buenosAiresUno ]) // Recoge 5000 de la salida
+		assert.equals(nico.dinero(), 7000)
+		assert.equals(buenosAiresUno.duenio(), banco)
+		assert.equals(nico.casilleroActual(), buenosAiresUno)
+	}
+
+	// EXTENSIONES
+	test "PUNTO 1 - PRISION: Hacer que Nico vaya preso" {
+		nico.irAPrision()
+		assert.equals(nico.casilleroActual(), prision)
+	}
+	
+	test "PUNTO 2 - ESTRATEGIAS: Hacer que nico (garca) caiga en buenosAiresUno, con buenosAiresDos con duenio Santi" {
+		buenosAiresDos.duenio(santi)
+		nico.caer(buenosAiresUno)
+		assert.equals(buenosAiresUno.duenio(), nico)
+	}
+	
+	test "PUNTO 2 - ESTRATEGIAS: Hacer que nico (garca) caiga en buenosAiresUno, con buenosAiresDos con duenio banco" {
+		nico.caer(buenosAiresUno)
+		assert.equals(buenosAiresUno.duenio(), banco)
+	}
+	
+	test "PUNTO 2 - ESTRATEGIAS: Hacer que fede (standard) caiga en buenosAiresUno, con buenosAiresDos con duenio Santi" {
+		buenosAiresDos.duenio(santi)
+		fede.caer(buenosAiresUno)
+		assert.equals(buenosAiresUno.duenio(), fede)
+	}
+	
+	test "PUNTO 2 - ESTRATEGIAS: Hacer que fede (standard) caiga en buenosAiresUno, con buenosAiresDos con duenio banco" {
+		fede.caer(buenosAiresUno)
+		assert.equals(buenosAiresUno.duenio(), fede)
+	}
+	
+	test "PUNTO 2 - ESTRATEGIAS: Hacer que podo (imperialista) caiga en buenosAiresUno, con buenosAiresDos con duenio Santi" {
+		buenosAiresDos.duenio(santi)
+		podo.caer(buenosAiresUno)
+		assert.equals(buenosAiresUno.duenio(), banco)
+	}
+	
+	test "PUNTO 2 - ESTRATEGIAS: Hacer que podo (imperialista) caiga en buenosAiresUno, con buenosAiresDos con duenio banco" {
+		podo.caer(buenosAiresUno)
+		assert.equals(buenosAiresUno.duenio(), podo)
+	}
+	
+	test "PUNTO 3 - HIPOTECAS: hacer que Fede tenga que hipotecar empresaUno para pagar la renta" {
+		fede.caer(empresaUno)
+		fede.dinero(20)
+		chacoDos.duenio(santi)
+		fede.caer(chacoDos)
+		assert.equals(fede.dinero(),95)
+		assert.equals(empresaUno.duenio(), banco)
+		assert.equals(empresaUno.precioCompra(), 375)
+	}
+}
+
